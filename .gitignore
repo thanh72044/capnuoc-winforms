@@ -1,0 +1,37 @@
+# .gitignore cho C# .NET WinForms
+
+# Build output
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# .NET
+*.dll
+*.exe
+*.pdb
+*.cache
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio
+.vs/
+*.vbproj.user
+*.csproj.user
+
+# NuGet
+packages/
+*.nupkg
+*.nuspec
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
