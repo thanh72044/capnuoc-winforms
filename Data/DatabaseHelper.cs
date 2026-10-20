@@ -10,7 +10,7 @@ namespace CapNuocApp.Data
     {
         // TODO: Thay đổi connection string cho phù hợp với môi trường của bạn
         private static string _connectionString =
-            "Server=localhost;Database=CapNuocDB;Trusted_Connection=true;TrustServerCertificate=true;";
+            "Server=localhost,50905;Database=CapNuocDB;Trusted_Connection=true;TrustServerCertificate=true;";
 
         /// <summary>
         /// Lấy toàn bộ danh sách khách hàng
