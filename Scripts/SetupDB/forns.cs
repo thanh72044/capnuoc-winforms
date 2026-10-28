@@ -46,7 +46,7 @@ public class BaiTap3
     public static string TaoMaKhachHang()
     {
         string ngayHienTai = DateTime.Now.ToString("yyyyMMdd");
-        int soNgauNhien = new random().next(100, 999);
+        int soNgauNhien = new Random().Next(100, 999);
         return $"{ngayHienTai}-{soNgauNhien}";
     }
 
