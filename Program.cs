@@ -5,7 +5,7 @@ static class Program
     [STAThread]
     static void Main()
     {
-        BaiTap7.Test1_Where();
+        BaiTap7.Test4_Find();
         ApplicationConfiguration.Initialize();
         Application.Run(new MainForm());
     }
