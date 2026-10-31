@@ -101,4 +101,18 @@ public class BaiTap7
             MessageBox.Show("Không tìm thấy đồng hồ với mã này!", "Kết quả Test 4");
         }
     }
+
+    public static void Test5_TryCatch()
+    {
+        try
+        {
+            string ChiSoNhap = "134";
+            int ChiSo = int.Parse(ChiSoNhap);
+            MessageBox.Show($"chỉ số hợp lệ: {ChiSo}");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Bắt được lỗi an toàn:\n{ex.Message}", "Thông báo bẫy lỗi");
+        }
+    }
 }
