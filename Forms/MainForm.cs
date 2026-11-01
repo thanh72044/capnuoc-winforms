@@ -1,49 +1,89 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using CapNuocApp.Data;
+
 namespace CapNuocApp;
 
 public class MainForm : Form
 {
+    private DataGridView dgvKhachHang;
+
     public MainForm()
     {
         InitializeComponent();
+        LoadData();
     }
 
     private void InitializeComponent()
     {
         // === Cấu hình cửa sổ chính ===
         this.Text = "Quản Lý Cấp Nước Bến Thành";
-        this.Size = new Size(900, 600);
+        this.Size = new Size(1000, 620);
         this.StartPosition = FormStartPosition.CenterScreen;
         this.BackColor = Color.FromArgb(240, 244, 248);
 
         // === Tiêu đề ===
         var lblTitle = new Label
         {
-            Text = "💧 Hệ Thống Quản Lý Cấp Nước",
-            Font = new Font("Segoe UI", 20, FontStyle.Bold),
+            Text = "💧 Danh Sách Khách Hàng (Dữ Liệu Thật Từ SQL Server)",
+            Font = new Font("Segoe UI", 16, FontStyle.Bold),
             ForeColor = Color.FromArgb(30, 100, 200),
-            Location = new Point(30, 30),
+            Location = new Point(30, 20),
             AutoSize = true
         };
 
-        // === Nút ví dụ ===
-        var btnHello = new Button
+        // === Nút tải lại dữ liệu ===
+        var btnReload = new Button
         {
-            Text = "Xin chào WinForms! 👋",
-            Location = new Point(30, 100),
-            Size = new Size(220, 45),
+            Text = "🔄 Tải lại dữ liệu",
+            Location = new Point(30, 65),
+            Size = new Size(160, 36),
             BackColor = Color.FromArgb(30, 100, 200),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
-            Font = new Font("Segoe UI", 11),
+            Font = new Font("Segoe UI", 10, FontStyle.Bold),
             Cursor = Cursors.Hand
         };
-        btnHello.Click += (s, e) =>
-            MessageBox.Show("Xin chào Cấp Nước Bến Thành!\nBạn đang học WinForms với Antigravity 🚀",
-                            "Chào mừng",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
+        btnReload.Click += (s, e) => LoadData();
+
+        // === Bảng hiển thị danh sách khách hàng ===
+        dgvKhachHang = new DataGridView
+        {
+            Location = new Point(30, 115),
+            Size = new Size(925, 430),
+            BackgroundColor = Color.White,
+            BorderStyle = BorderStyle.Fixed3D,
+            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+            ReadOnly = true,
+            SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+            AllowUserToAddRows = false,
+            RowHeadersVisible = false
+        };
 
         this.Controls.Add(lblTitle);
-        this.Controls.Add(btnHello);
+        this.Controls.Add(btnReload);
+        this.Controls.Add(dgvKhachHang);
+    }
+
+    /// <summary>
+    /// Gọi DatabaseHelper để lấy dữ liệu thật từ SQL Server và hiển thị lên bảng
+    /// </summary>
+    private void LoadData()
+    {
+        try
+        {
+            var ds = DatabaseHelper.GetAllKhachHang();
+            dgvKhachHang.DataSource = ds;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Lỗi kết nối cơ sở dữ liệu:\n{ex.Message}",
+                "Thông báo lỗi",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
     }
 }
