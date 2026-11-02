@@ -940,6 +940,43 @@ public class DatabaseHelper
 
 ---
 
+## 🎯 GÓC ÔN PHỎNG VẤN QUAN TRỌNG VỀ ADO.NET & BẢO MẬT
+
+### ❓ Câu 1: Từ khóa `using` trước `SqlConnection`, `SqlCommand` dùng để làm gì?
+* **Trả lời chuẩn:**  
+  `using` đảm bảo tài nguyên kết nối và bộ nhớ luôn được **tự động giải phóng** (tự động gọi hàm `.Dispose()` hoặc `.Close()`) ngay khi khối lệnh kết thúc, **kể cả khi có lỗi (Exception) xảy ra giữa chừng**.
+* **Hậu quả nếu quên `using`:**  
+  Gây ra hiện tượng **Connection Leak (Rò rỉ kết nối)**. Các cổng kết nối tới SQL Server bị giữ lại và không được giải phóng, dẫn tới việc SQL Server cạn kiệt kết nối trong connection pool và làm sập ứng dụng.
+
+---
+
+### ❓ Câu 2: SQL Injection là gì và cách phòng chống trong C#?
+* **Khái niệm:**  
+  SQL Injection là kỹ thuật tấn công khi kẻ xấu chèn các đoạn mã SQL độc hại vào các ô nhập liệu (TextBox) để thay đổi logic câu lệnh SQL ban đầu.
+* **Nguyên nhân:** Do lập trình viên viết SQL bằng cách **cộng chuỗi trực tiếp**:
+  ```csharp
+  // ❌ NGUY HIỂM:
+  string sql = "SELECT * FROM KhachHang WHERE HoTen = '" + txtTen.Text + "'";
+  // Kẻ xấu nhập: ' OR '1'='1' --  => Lấy được sạch toàn bộ dữ liệu!
+  // Hoặc nhập: '; DROP TABLE KhachHang; -- => Xóa sạch bảng dữ liệu!
+  ```
+* **Cách phòng chống chuẩn:**  
+  Dùng **Parameterized Query** kết hợp với `cmd.Parameters.AddWithValue(...)`:
+  ```csharp
+  // ✅ AN TOÀN 100%:
+  string sql = "SELECT * FROM KhachHang WHERE HoTen = @Ten";
+  cmd.Parameters.AddWithValue("@Ten", txtTen.Text);
+  ```
+  Lúc này SQL Server sẽ xử lý `@Ten` thuần túy như một giá trị văn bản, triệt tiêu hoàn toàn khả năng bị tiêm mã độc.
+
+---
+
+### ❓ Câu 3: Tại sao nên dùng Xóa mềm (Soft Delete) thay vì Xóa cứng (Hard Delete)?
+* **Xóa cứng (`DELETE FROM`):** Xóa vĩnh viễn dòng dữ liệu khỏi bảng. Nếu khách hàng đã phát sinh hóa đơn tiền nước, lệnh này sẽ bị lỗi khóa ngoại (Foreign Key Constraint) hoặc làm mất lịch sử đối soát của kế toán.
+* **Xóa mềm (`UPDATE SET DangHoatDong = 0`):** Giữ nguyên dữ liệu trong cơ sở dữ liệu để phục vụ đối soát, nhưng trong câu lệnh `GetAllKhachHang()` chỉ lọc `WHERE DangHoatDong = 1` nên trên giao diện người dùng sẽ thấy khách hàng đã được xóa.
+
+---
+
 # GIAI ĐOẠN 6: WINFORMS (Tuần 3)
 
 ---
