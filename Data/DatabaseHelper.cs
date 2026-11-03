@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Runtime.InteropServices;
 using CapNuocApp.Models;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Office2010.Excel;
@@ -88,5 +89,62 @@ public class DatabaseHelper
         cmd.Parameters.AddWithValue(@"Id", kh.Id);
         int soDong = cmd.ExecuteNonQuery();
         return soDong > 0;
+    }
+
+    public static int DemSoKhachHang()
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql = @"SELECT COUNT(*) FROM KhachHang WHERE DangHoatDong = 1";
+        using var cmd = new SqlCommand(sql, conn);
+        object result = cmd.ExecuteScalar();
+        return result != null ? Convert.ToInt32(result) : 0;
+    }
+
+    public static decimal TinhTongDoanhThu()
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql = @"SELECT SUM((ChiSoCuoi - ChiSoDau) * DonGia) FROM ChiSoDongHo";
+        using var cmd = new SqlCommand(sql, conn);
+        object result = cmd.ExecuteScalar();
+        if (result != null && result != DBNull.Value)
+        {
+            return Convert.ToDecimal(result);
+        }
+        return 0m;
+    }
+
+    public static List<KhachHang> SearchKhachHang(string tuKhoa)
+    {
+        var danhSach = new List<KhachHang>();
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql =
+            @"SELECT * FROM KhachHang 
+                       WHERE (HoTen LIKE @kw OR MaKhachHang LIKE @kw OR SoDienThoai LIKE @kw) 
+                       AND DangHoatDong = 1 
+                       ORDER BY HoTen ASC";
+
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@kw", $"%{tuKhoa}%");
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var kh = new KhachHang
+            {
+                Id = (int)reader["Id"],
+                MaKhachHang = reader["MaKhachHang"].ToString() ?? "",
+                HoTen = reader["HoTen"].ToString() ?? "",
+                DiaChi = reader["DiaChi"].ToString() ?? "",
+                SoDienThoai = reader["SoDienThoai"].ToString() ?? "",
+                Email = reader["Email"] != DBNull.Value ? reader["Email"].ToString() ?? "" : "",
+                MaSoDongHo = reader["MaSoDongHo"].ToString() ?? "",
+                NgayDangKy = (DateTime)reader["NgayDangKy"],
+                DangHoatDong = (bool)reader["DangHoatDong"],
+            };
+            danhSach.Add(kh);
+        }
+        return danhSach;
     }
 }
