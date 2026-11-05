@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using CapNuocApp.Models;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Office2010.Excel;
@@ -146,5 +147,24 @@ public class DatabaseHelper
             danhSach.Add(kh);
         }
         return danhSach;
+    }
+
+    public static bool ThemChiSoNuoc(ChiSoDongHo cs)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql =
+            @"INSERT INTO ChiSoDongHo (KhachHangId, MaSoDongHo, ChiSoDau, ChiSoCuoi, Thang, Nam, DonGia)
+                       VALUES (@KhachHangId, @MaDH, @Dau, @Cuoi, @Thang, @Nam, @DonGia)";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@KhachHangId", cs.KhachHangId);
+        cmd.Parameters.AddWithValue("@MaDH", cs.MaSoDongHo);
+        cmd.Parameters.AddWithValue("@Dau", cs.ChiSoDau);
+        cmd.Parameters.AddWithValue("@Cuoi", cs.ChiSoCuoi);
+        cmd.Parameters.AddWithValue("@Thang", cs.Thang);
+        cmd.Parameters.AddWithValue("@Nam", cs.Nam > 0 ? cs.Nam : DateTime.Now.Year);
+        cmd.Parameters.AddWithValue("@DonGia", cs.DonGia);
+        int soDong = cmd.ExecuteNonQuery();
+        return soDong > 0;
     }
 }

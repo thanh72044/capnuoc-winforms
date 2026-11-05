@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using CapNuocApp.Data;
 using CapNuocApp.Models;
@@ -12,20 +13,22 @@ public class MainForm : Form
     // 1. KHAI BÁO CÁC Ô NHẬP LIỆU (TextBox) VÀ BẢNG (DataGridView)
     // Các biến này đặt ở cấp Class để mọi hàm bên dưới đều đọc/ghi được
     // =========================================================================
-    private TextBox txtId;       // Lưu ID ngầm của khách hàng (dùng khi Sửa / Xóa)
-    private TextBox txtMaKH;     // Ô gõ Mã khách hàng (VD: KH-001)
-    private TextBox txtHoTen;    // Ô gõ Họ và tên
-    private TextBox txtDiaChi;   // Ô gõ Địa chỉ nhà
-    private TextBox txtSDT;      // Ô gõ Số điện thoại
-    private TextBox txtEmail;    // Ô gõ Email
-    private TextBox txtMaDH;     // Ô gõ Mã số đồng hồ nước (VD: DH-001)
+    private TextBox txtId; // Lưu ID ngầm của khách hàng (dùng khi Sửa / Xóa)
+    private TextBox txtMaKH; // Ô gõ Mã khách hàng (VD: KH-001)
+    private TextBox txtHoTen; // Ô gõ Họ và tên
+    private TextBox txtDiaChi; // Ô gõ Địa chỉ nhà
+    private TextBox txtSDT; // Ô gõ Số điện thoại
+    private TextBox txtEmail; // Ô gõ Email
+    private TextBox txtMaDH; // Ô gõ Mã số đồng hồ nước (VD: DH-001)
 
     private DataGridView dgvKhachHang; // Bảng lưới hiển thị danh sách từ SQL Server
+    private TextBox txtTimKiem;
+    private Label lblThongKe;
 
     public MainForm()
     {
         InitializeComponent(); // Dựng giao diện (nút bấm, ô chữ, bảng...)
-        LoadData();            // Vừa bật app lên là tự động kéo dữ liệu từ SQL Server về
+        LoadData(); // Vừa bật app lên là tự động kéo dữ liệu từ SQL Server về
     }
 
     // =========================================================================
@@ -37,7 +40,7 @@ public class MainForm : Form
         this.Text = "Hệ Thống Quản Lý Cấp Nước Bến Thành";
         this.Size = new Size(1150, 680);
         this.StartPosition = FormStartPosition.CenterScreen; // Mở ra giữa màn hình
-        this.BackColor = Color.FromArgb(240, 244, 248);     // Màu xanh nhạt dễ nhìn
+        this.BackColor = Color.FromArgb(240, 244, 248); // Màu xanh nhạt dễ nhìn
 
         // --- TIÊU ĐỀ PHÍA TRÊN CÙNG ---
         var lblTitle = new Label
@@ -46,7 +49,7 @@ public class MainForm : Form
             Font = new Font("Segoe UI", 16, FontStyle.Bold),
             ForeColor = Color.FromArgb(30, 100, 200),
             Location = new Point(30, 15),
-            AutoSize = true
+            AutoSize = true,
         };
         this.Controls.Add(lblTitle);
 
@@ -57,43 +60,118 @@ public class MainForm : Form
             Location = new Point(30, 60),
             Size = new Size(350, 550),
             Font = new Font("Segoe UI", 10, FontStyle.Bold),
-            ForeColor = Color.FromArgb(50, 50, 50)
+            ForeColor = Color.FromArgb(50, 50, 50),
         };
 
         // Tọa độ để xếp các ô nhập liệu thẳng hàng từ trên xuống dưới
-        int labelX = 20, inputX = 130, startY = 35, gapY = 45;
+        int labelX = 20,
+            inputX = 130,
+            startY = 35,
+            gapY = 45;
 
         // Ô Id này ẩn đi, người dùng không cần thấy, nhưng code cần để biết đang sửa/xóa ai
         txtId = new TextBox { Visible = false };
 
         // 1. Ô nhập Mã KH
-        grpInfo.Controls.Add(new Label { Text = "Mã KH:", Location = new Point(labelX, startY), AutoSize = true });
-        txtMaKH = new TextBox { Location = new Point(inputX, startY - 3), Size = new Size(195, 27), Font = new Font("Segoe UI", 10) };
+        grpInfo.Controls.Add(
+            new Label
+            {
+                Text = "Mã KH:",
+                Location = new Point(labelX, startY),
+                AutoSize = true,
+            }
+        );
+        txtMaKH = new TextBox
+        {
+            Location = new Point(inputX, startY - 3),
+            Size = new Size(195, 27),
+            Font = new Font("Segoe UI", 10),
+        };
         grpInfo.Controls.Add(txtMaKH);
 
         // 2. Ô nhập Họ Tên
-        grpInfo.Controls.Add(new Label { Text = "Họ Tên:", Location = new Point(labelX, startY + gapY), AutoSize = true });
-        txtHoTen = new TextBox { Location = new Point(inputX, startY + gapY - 3), Size = new Size(195, 27), Font = new Font("Segoe UI", 10) };
+        grpInfo.Controls.Add(
+            new Label
+            {
+                Text = "Họ Tên:",
+                Location = new Point(labelX, startY + gapY),
+                AutoSize = true,
+            }
+        );
+        txtHoTen = new TextBox
+        {
+            Location = new Point(inputX, startY + gapY - 3),
+            Size = new Size(195, 27),
+            Font = new Font("Segoe UI", 10),
+        };
         grpInfo.Controls.Add(txtHoTen);
 
         // 3. Ô nhập Địa Chỉ
-        grpInfo.Controls.Add(new Label { Text = "Địa Chỉ:", Location = new Point(labelX, startY + gapY * 2), AutoSize = true });
-        txtDiaChi = new TextBox { Location = new Point(inputX, startY + gapY * 2 - 3), Size = new Size(195, 27), Font = new Font("Segoe UI", 10) };
+        grpInfo.Controls.Add(
+            new Label
+            {
+                Text = "Địa Chỉ:",
+                Location = new Point(labelX, startY + gapY * 2),
+                AutoSize = true,
+            }
+        );
+        txtDiaChi = new TextBox
+        {
+            Location = new Point(inputX, startY + gapY * 2 - 3),
+            Size = new Size(195, 27),
+            Font = new Font("Segoe UI", 10),
+        };
         grpInfo.Controls.Add(txtDiaChi);
 
         // 4. Ô nhập Số Điện Thoại
-        grpInfo.Controls.Add(new Label { Text = "Số ĐT:", Location = new Point(labelX, startY + gapY * 3), AutoSize = true });
-        txtSDT = new TextBox { Location = new Point(inputX, startY + gapY * 3 - 3), Size = new Size(195, 27), Font = new Font("Segoe UI", 10) };
+        grpInfo.Controls.Add(
+            new Label
+            {
+                Text = "Số ĐT:",
+                Location = new Point(labelX, startY + gapY * 3),
+                AutoSize = true,
+            }
+        );
+        txtSDT = new TextBox
+        {
+            Location = new Point(inputX, startY + gapY * 3 - 3),
+            Size = new Size(195, 27),
+            Font = new Font("Segoe UI", 10),
+        };
         grpInfo.Controls.Add(txtSDT);
 
         // 5. Ô nhập Email
-        grpInfo.Controls.Add(new Label { Text = "Email:", Location = new Point(labelX, startY + gapY * 4), AutoSize = true });
-        txtEmail = new TextBox { Location = new Point(inputX, startY + gapY * 4 - 3), Size = new Size(195, 27), Font = new Font("Segoe UI", 10) };
+        grpInfo.Controls.Add(
+            new Label
+            {
+                Text = "Email:",
+                Location = new Point(labelX, startY + gapY * 4),
+                AutoSize = true,
+            }
+        );
+        txtEmail = new TextBox
+        {
+            Location = new Point(inputX, startY + gapY * 4 - 3),
+            Size = new Size(195, 27),
+            Font = new Font("Segoe UI", 10),
+        };
         grpInfo.Controls.Add(txtEmail);
 
         // 6. Ô nhập Mã Đồng Hồ
-        grpInfo.Controls.Add(new Label { Text = "Mã Đồng Hồ:", Location = new Point(labelX, startY + gapY * 5), AutoSize = true });
-        txtMaDH = new TextBox { Location = new Point(inputX, startY + gapY * 5 - 3), Size = new Size(195, 27), Font = new Font("Segoe UI", 10) };
+        grpInfo.Controls.Add(
+            new Label
+            {
+                Text = "Mã Đồng Hồ:",
+                Location = new Point(labelX, startY + gapY * 5),
+                AutoSize = true,
+            }
+        );
+        txtMaDH = new TextBox
+        {
+            Location = new Point(inputX, startY + gapY * 5 - 3),
+            Size = new Size(195, 27),
+            Font = new Font("Segoe UI", 10),
+        };
         grpInfo.Controls.Add(txtMaDH);
 
         // --- CÁC NÚT BẤM THAO TÁC (Nằm dưới các ô nhập liệu) ---
@@ -108,7 +186,7 @@ public class MainForm : Form
             BackColor = Color.FromArgb(40, 167, 69),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
-            Cursor = Cursors.Hand
+            Cursor = Cursors.Hand,
         };
         btnAdd.Click += (s, e) => ActionThem(); // Bấm nút này sẽ gọi hàm ActionThem bên dưới
 
@@ -121,7 +199,7 @@ public class MainForm : Form
             BackColor = Color.FromArgb(243, 156, 18),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
-            Cursor = Cursors.Hand
+            Cursor = Cursors.Hand,
         };
         btnUpdate.Click += (s, e) => ActionSua(); // Bấm nút này sẽ gọi hàm ActionSua bên dưới
 
@@ -134,7 +212,7 @@ public class MainForm : Form
             BackColor = Color.FromArgb(220, 53, 69),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
-            Cursor = Cursors.Hand
+            Cursor = Cursors.Hand,
         };
         btnDelete.Click += (s, e) => ActionXoa(); // Bấm nút này sẽ gọi hàm ActionXoa bên dưới
 
@@ -147,28 +225,93 @@ public class MainForm : Form
             BackColor = Color.FromArgb(108, 117, 125),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
-            Cursor = Cursors.Hand
+            Cursor = Cursors.Hand,
         };
         btnClear.Click += (s, e) => XoaTrangForm();
+
+        // Nút Ghi Số Nước (Màu xanh dương đậm)
+        var btnGhiNuoc = new Button
+        {
+            Text = "💧 Ghi Số Nước",
+            Location = new Point(20, btnY + 100),
+            Size = new Size(305, 42),
+            BackColor = Color.FromArgb(0, 102, 204),
+            ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat,
+            Font = new Font("Segoe UI", 10.5f, FontStyle.Bold),
+            Cursor = Cursors.Hand
+        };
+        btnGhiNuoc.FlatAppearance.BorderSize = 0;
+        btnGhiNuoc.Click += (s, e) => ActionMoFormGhiNuoc();
 
         grpInfo.Controls.Add(btnAdd);
         grpInfo.Controls.Add(btnUpdate);
         grpInfo.Controls.Add(btnDelete);
         grpInfo.Controls.Add(btnClear);
+        grpInfo.Controls.Add(btnGhiNuoc);
         this.Controls.Add(grpInfo);
+        // --- THANH TÌM KIẾM VÀ THỐNG KÊ (Nằm phía trên bảng) ---
+        txtTimKiem = new TextBox
+        {
+            Location = new Point(400, 60),
+            Size = new Size(250, 27),
+            Font = new Font("Segoe UI", 10),
+            PlaceholderText = "Nhập tên, mã KH hoặc SĐT...",
+        };
+
+        var btnTimKiem = new Button
+        {
+            Text = "🔍 Tìm",
+            Location = new Point(660, 58),
+            Size = new Size(80, 30),
+            BackColor = Color.FromArgb(0, 123, 255),
+            ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat,
+            Cursor = Cursors.Hand,
+        };
+        btnTimKiem.Click += (s, e) => ActionTimKiem();
+
+        var btnLamMoi = new Button
+        {
+            Text = "🔄 Tất cả",
+            Location = new Point(750, 58),
+            Size = new Size(85, 30),
+            BackColor = Color.FromArgb(108, 117, 125),
+            ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat,
+            Cursor = Cursors.Hand,
+        };
+        btnLamMoi.Click += (s, e) =>
+        {
+            txtTimKiem.Clear();
+            LoadData();
+        };
+
+        lblThongKe = new Label
+        {
+            Location = new Point(850, 63),
+            AutoSize = true,
+            Font = new Font("Segoe UI", 10, FontStyle.Italic),
+            ForeColor = Color.DarkSlateGray,
+        };
+
+        this.Controls.Add(txtTimKiem);
+        this.Controls.Add(btnTimKiem);
+        this.Controls.Add(btnLamMoi);
+        this.Controls.Add(lblThongKe);
 
         // --- CỘT BÊN PHẢI: BẢNG LƯỚI HIỂN THỊ DANH SÁCH (DataGridView) ---
         dgvKhachHang = new DataGridView
         {
-            Location = new Point(400, 70),
-            Size = new Size(710, 540),
+            Location = new Point(400, 105),
+            Size = new Size(710, 505),
             BackgroundColor = Color.White,
             BorderStyle = BorderStyle.Fixed3D,
             AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-            ReadOnly = true,                                     // Chỉ cho xem trên bảng, muốn sửa thì sửa qua ô bên trái
+            ReadOnly = true, // Chỉ cho xem trên bảng, muốn sửa thì sửa qua ô bên trái
             SelectionMode = DataGridViewSelectionMode.FullRowSelect, // Click vào là chọn nguyên dòng
             AllowUserToAddRows = false,
-            RowHeadersVisible = false
+            RowHeadersVisible = false,
         };
 
         // 🌟 TÍNH NĂNG QUAN TRỌNG NHẤT:
@@ -203,11 +346,47 @@ public class MainForm : Form
         try
         {
             dgvKhachHang.DataSource = DatabaseHelper.GetAllKhachHang();
+            lblThongKe.Text = $"Tổng số{DatabaseHelper.DemSoKhachHang()} khách hàng";
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(
+                $"Lỗi tải dữ liệu: {ex.Message}",
+                "Lỗi",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
         }
+    }
+
+    private void ActionTimKiem()
+    {
+        string tuKhoa = txtTimKiem.Text.Trim();
+        if (string.IsNullOrEmpty(tuKhoa))
+        {
+            LoadData();
+            return;
+        }
+        var KetQua = DatabaseHelper.SearchKhachHang(tuKhoa);
+        dgvKhachHang.DataSource = KetQua;
+        lblThongKe.Text = $"đã tìm thấy{KetQua.Count} khách hàng";
+    }
+
+    private void ActionMoFormGhiNuoc()
+    {
+        if (string.IsNullOrEmpty(txtId.Text))
+        {
+            MessageBox.Show(
+                "Vui lòng click chọn 1 khách hàng trên bảng trước khi ghi nước!",
+                "Nhắc nhở"
+            );
+            return;
+        }
+        int KhachHangId = int.Parse(txtId.Text);
+        string HoTen = txtHoTen.Text;
+        string MaDH = txtMaDH.Text;
+        var formGhiNuoc = new FormGhiNuoc(KhachHangId, HoTen, MaDH);
+        formGhiNuoc.ShowDialog();
     }
 
     /// <summary>
@@ -230,15 +409,15 @@ public class MainForm : Form
             DiaChi = txtDiaChi.Text.Trim(),
             SoDienThoai = txtSDT.Text.Trim(),
             Email = txtEmail.Text.Trim(),
-            MaSoDongHo = txtMaDH.Text.Trim()
+            MaSoDongHo = txtMaDH.Text.Trim(),
         };
 
         // 3. Gọi DatabaseHelper.ThemKhachHang để lưu vào SQL Server
         if (DatabaseHelper.ThemKhachHang(kh))
         {
             MessageBox.Show("Thêm khách hàng mới thành công! 🎉", "Thông báo");
-            LoadData();      // Tải lại bảng để khách hàng mới xuất hiện ngay
-            XoaTrangForm();  // Dọn sạch ô nhập liệu để sẵn sàng nhập người tiếp theo
+            LoadData(); // Tải lại bảng để khách hàng mới xuất hiện ngay
+            XoaTrangForm(); // Dọn sạch ô nhập liệu để sẵn sàng nhập người tiếp theo
         }
     }
 
@@ -249,7 +428,10 @@ public class MainForm : Form
     {
         if (string.IsNullOrEmpty(txtId.Text))
         {
-            MessageBox.Show("Vui lòng click chọn 1 khách hàng trên bảng trước khi sửa!", "Nhắc nhở");
+            MessageBox.Show(
+                "Vui lòng click chọn 1 khách hàng trên bảng trước khi sửa!",
+                "Nhắc nhở"
+            );
             return;
         }
 
@@ -260,7 +442,7 @@ public class MainForm : Form
             HoTen = txtHoTen.Text.Trim(),
             DiaChi = txtDiaChi.Text.Trim(),
             SoDienThoai = txtSDT.Text.Trim(),
-            Email = txtEmail.Text.Trim()
+            Email = txtEmail.Text.Trim(),
         };
 
         // Gọi DatabaseHelper cập nhật vào SQL Server
@@ -278,15 +460,18 @@ public class MainForm : Form
     {
         if (string.IsNullOrEmpty(txtId.Text))
         {
-            MessageBox.Show("Vui lòng click chọn 1 khách hàng trên bảng trước khi xóa!", "Nhắc nhở");
+            MessageBox.Show(
+                "Vui lòng click chọn 1 khách hàng trên bảng trước khi xóa!",
+                "Nhắc nhở"
+            );
             return;
         }
 
         // Hỏi xác nhận trước khi xóa để tránh người dùng bấm nhầm
         var confirm = MessageBox.Show(
-            $"Bạn có chắc chắn muốn xóa khách hàng: [{txtMaKH.Text}] {txtHoTen.Text}?", 
-            "Xác nhận xóa", 
-            MessageBoxButtons.YesNo, 
+            $"Bạn có chắc chắn muốn xóa khách hàng: [{txtMaKH.Text}] {txtHoTen.Text}?",
+            "Xác nhận xóa",
+            MessageBoxButtons.YesNo,
             MessageBoxIcon.Question
         );
 
@@ -298,8 +483,8 @@ public class MainForm : Form
             if (DatabaseHelper.XoaKhachHang(kh))
             {
                 MessageBox.Show("Đã xóa khách hàng thành công!", "Thông báo");
-                LoadData();      // Tải lại bảng, khách hàng này sẽ biến mất khỏi bảng
-                XoaTrangForm();  // Xóa trắng các ô nhập
+                LoadData(); // Tải lại bảng, khách hàng này sẽ biến mất khỏi bảng
+                XoaTrangForm(); // Xóa trắng các ô nhập
             }
         }
     }

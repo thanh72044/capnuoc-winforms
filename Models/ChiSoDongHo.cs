@@ -21,6 +21,8 @@ public class ChiSoDongHo
 
     public int Thang { get; set; }           
 
+    public int Nam { get; set; } = DateTime.Now.Year;
+
     public decimal DonGia { get; set; } = 7000m;       
 
     public int SoLuongTieuThu => ChiSoCuoi - ChiSoDau;
