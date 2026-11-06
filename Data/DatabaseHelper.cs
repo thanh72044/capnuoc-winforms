@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using CapNuocApp.Models;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Office2016.Drawing;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -166,5 +167,35 @@ public class DatabaseHelper
         cmd.Parameters.AddWithValue("@DonGia", cs.DonGia);
         int soDong = cmd.ExecuteNonQuery();
         return soDong > 0;
+    }
+
+    public static List<ChiSoDongHo> GetChiSoDongHo(int khachHangId)
+    {
+        var danhSach = new List<ChiSoDongHo>();
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql =
+            @"SELECT * FROM ChiSoDongHo 
+                       WHERE KhachHangId = @KhId 
+                       ORDER BY Nam DESC, Thang DESC";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@KhId", khachHangId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var cs = new ChiSoDongHo
+            {
+                Id = (int)reader["Id"],
+                KhachHangId = (int)reader["KhachHangId"],
+                MaSoDongHo = reader["MaSoDongHo"].ToString() ?? "",
+                ChiSoDau = (int)reader["ChiSoDau"],
+                ChiSoCuoi = (int)reader["ChiSoCuoi"],
+                Thang = (int)reader["Thang"],
+                Nam = (int)reader["Nam"],
+                DonGia = reader["DonGia"] != DBNull.Value ? (decimal)reader["DonGia"] : 7000m,
+            };
+            danhSach.Add(cs);
+        }
+        return danhSach;
     }
 }

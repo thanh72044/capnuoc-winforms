@@ -17,6 +17,7 @@ public class FormGhiNuoc : Form
     private ComboBox cboThang;
     private Label lblTieuThu;
     private Label lblThanhTien;
+    private DataGridView dgvLichSu;
 
     private const decimal DON_GIA = 7000m; // 7.000đ/m3 nước sinh hoạt
 
@@ -33,7 +34,7 @@ public class FormGhiNuoc : Form
     {
         // Cấu hình cửa sổ popup
         this.Text = "Ghi Nhận Chỉ Số Đồng Hồ Nước";
-        this.Size = new Size(420, 480);
+        this.Size = new Size(820, 480);
         this.StartPosition = FormStartPosition.CenterParent; // Mở ra ngay giữa màn hình cha
         this.FormBorderStyle = FormBorderStyle.FixedDialog; // Cố định kích thước, không cho kéo dãn
         this.MaximizeBox = false;
@@ -51,7 +52,10 @@ public class FormGhiNuoc : Form
         };
         this.Controls.Add(lblHeader);
 
-        int labelX = 30, inputX = 160, startY = 85, gapY = 45;
+        int labelX = 30,
+            inputX = 160,
+            startY = 85,
+            gapY = 45;
 
         // 1. Chọn Tháng
         this.Controls.Add(
@@ -168,6 +172,44 @@ public class FormGhiNuoc : Form
 
         // Tính toán ban đầu
         TinhTien();
+
+        // Tiêu đề bảng lịch sử
+        var lblLichSu = new Label
+        {
+            Text = "📋 LỊCH SỬ DÙNG NƯỚC CÁC THÁNG TRƯỚC",
+            Font = new Font("Segoe UI", 10.5f, FontStyle.Bold),
+            ForeColor = Color.FromArgb(0, 102, 204),
+            Location = new Point(400, 20),
+            AutoSize = true,
+        };
+        this.Controls.Add(lblLichSu);
+
+        // Bảng DataGridView hiển thị lịch sử
+        dgvLichSu = new DataGridView
+        {
+            Location = new Point(400, 55),
+            Size = new Size(380, 340),
+            BackgroundColor = Color.White,
+            ReadOnly = true,
+            AllowUserToAddRows = false,
+            RowHeadersVisible = false,
+            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+            SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+        };
+        this.Controls.Add(dgvLichSu);
+
+        // Gọi hàm nạp dữ liệu lịch sử lên bảng
+        LoadLichSu();
+    }
+
+    public void LoadLichSu()
+    {
+        var danhSach = DatabaseHelper.GetChiSoDongHo(_khachHangId);
+        dgvLichSu.DataSource = danhSach;
+        if (danhSach.Count > 0)
+        {
+            txtChiSoDau.Text = danhSach[0].ChiSoCuoi.ToString();
+        }
     }
 
     /// <summary>
@@ -194,7 +236,10 @@ public class FormGhiNuoc : Form
     /// </summary>
     private void ActionLuu()
     {
-        if (!int.TryParse(txtChiSoDau.Text.Trim(), out int dau) || !int.TryParse(txtChiSoCuoi.Text.Trim(), out int cuoi))
+        if (
+            !int.TryParse(txtChiSoDau.Text.Trim(), out int dau)
+            || !int.TryParse(txtChiSoCuoi.Text.Trim(), out int cuoi)
+        )
         {
             MessageBox.Show("Chỉ số đầu và cuối phải là số nguyên hợp lệ!", "Lỗi nhập liệu");
             return;
@@ -227,8 +272,12 @@ public class FormGhiNuoc : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi lưu cơ sở dữ liệu: {ex.Message}", "Lỗi SQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(
+                $"Lỗi lưu cơ sở dữ liệu: {ex.Message}",
+                "Lỗi SQL",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
         }
     }
 }
-
