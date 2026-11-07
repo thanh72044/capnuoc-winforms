@@ -198,4 +198,43 @@ public class DatabaseHelper
         }
         return danhSach;
     }
+
+    public static List<NhanVien> GetAllNhanVien()
+    {
+        var danhsach = new List<NhanVien>();
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        var sql = $"SELECT * FROM NhanVien WHERE DangHoatDong = 1 ORDER BY MaNhanVien ASC";
+        using var cmd = new SqlCommand(sql, conn);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var nv = new NhanVien
+            {
+                Id = (int)reader["Id"],
+                MaNhanVien = reader["MaNhanVien"].ToString() ?? "",
+                HoTen = reader["HoTen"].ToString() ?? "",
+                SoDienThoai = reader["SoDienThoai"].ToString() ?? "",
+                KhuVucPhuTrach = reader["KhuVucPhuTrach"].ToString() ?? "",
+                DangHoatDong = (bool)reader["DangHoatDong"],
+            };
+            danhsach.Add(nv);
+        }
+        return danhsach;
+    }
+
+    public static bool ThemNhanVien(NhanVien nv)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        var sql =
+            $"INSERT INTO NhanVien (MaNhanVien, HoTen, SoDienThoai, KhuVucPhuTrach) VALUES (@Ma, @HoTen, @SDT, @KhuVuc)";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Ma", nv.MaNhanVien);
+        cmd.Parameters.AddWithValue("@HoTen", nv.HoTen);
+        cmd.Parameters.AddWithValue("@SDT", nv.SoDienThoai);
+        cmd.Parameters.AddWithValue("@KhuVuc", nv.KhuVucPhuTrach);
+        int soDong = cmd.ExecuteNonQuery();
+        return soDong > 0;
+    }
 }

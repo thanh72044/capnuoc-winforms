@@ -53,6 +53,22 @@ public class MainForm : Form
         };
         this.Controls.Add(lblTitle);
 
+        // Nút mở quản lý nhân viên (Màu xanh lá ở góc trên bên phải)
+        var btnQuanLyNV = new Button
+        {
+            Text = "👥 Quản Lý Nhân Viên",
+            Location = new Point(910, 15),
+            Size = new Size(195, 36),
+            BackColor = Color.FromArgb(40, 167, 69),
+            ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat,
+            Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
+            Cursor = Cursors.Hand,
+        };
+        btnQuanLyNV.FlatAppearance.BorderSize = 0;
+        btnQuanLyNV.Click += (s, e) => new FormNhanVien().ShowDialog();
+        this.Controls.Add(btnQuanLyNV);
+
         // --- CỘT BÊN TRÁI: KHUNG CHỨA CÁC Ô NHẬP LIỆU (GroupBox) ---
         var grpInfo = new GroupBox
         {
@@ -239,7 +255,7 @@ public class MainForm : Form
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
             Font = new Font("Segoe UI", 10.5f, FontStyle.Bold),
-            Cursor = Cursors.Hand
+            Cursor = Cursors.Hand,
         };
         btnGhiNuoc.FlatAppearance.BorderSize = 0;
         btnGhiNuoc.Click += (s, e) => ActionMoFormGhiNuoc();
