@@ -237,4 +237,32 @@ public class DatabaseHelper
         int soDong = cmd.ExecuteNonQuery();
         return soDong > 0;
     }
+
+    public static bool CapNhatNhanVien(NhanVien nv)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql =
+            @"UPDATE NhanVien SET HoTen = @HoTen, SoDienThoai = @SDT, KhuVucPhuTrach = @KhuVuc WHERE Id = @Id";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Id", nv.Id);
+        cmd.Parameters.AddWithValue("@HoTen", nv.HoTen);
+        cmd.Parameters.AddWithValue("@SDT", nv.SoDienThoai);
+        cmd.Parameters.AddWithValue("@KhuVuc", nv.KhuVucPhuTrach);
+        int soDong = cmd.ExecuteNonQuery();
+        return soDong > 0;
+    }
+
+    public static bool XoaNhanVien(NhanVien nv)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql = @"UPDATE NhanVien SET DangHoatDong = 0 WHERE Id = @Id";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Id", nv.Id);
+        int soDong = cmd.ExecuteNonQuery();
+        return soDong > 0;
+    }
+    public static bool XoaNhanVien(int id) => XoaNhanVien(new NhanVien { Id = id });
+
 }
