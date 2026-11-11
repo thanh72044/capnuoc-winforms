@@ -53,6 +53,22 @@ public class MainForm : Form
         };
         this.Controls.Add(lblTitle);
 
+        // Nút mở quản lý hóa đơn (Màu xanh dương đậm ở trên thanh tiêu đề)
+        var btnHoaDon = new Button
+        {
+            Text = "🧾 Quản Lý Hóa Đơn",
+            Location = new Point(700, 15),
+            Size = new Size(195, 36),
+            BackColor = Color.FromArgb(0, 123, 255),
+            ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat,
+            Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
+            Cursor = Cursors.Hand,
+        };
+        btnHoaDon.FlatAppearance.BorderSize = 0;
+        btnHoaDon.Click += (s, e) => new FormHoaDon().ShowDialog();
+        this.Controls.Add(btnHoaDon);
+
         // Nút mở quản lý nhân viên (Màu xanh lá ở góc trên bên phải)
         var btnQuanLyNV = new Button
         {

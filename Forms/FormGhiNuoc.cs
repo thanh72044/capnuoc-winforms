@@ -266,7 +266,40 @@ public class FormGhiNuoc : Form
         {
             if (DatabaseHelper.ThemChiSoNuoc(cs))
             {
-                MessageBox.Show("Ghi nhận chỉ số nước thành công! 🎉", "Thông báo");
+                // ==============================================================
+                // 🌟 TỰ ĐỘNG SINH HÓA ĐƠN TIỀN NƯỚC KHI GHI CHỈ SỐ THÀNH CÔNG
+                // ==============================================================
+                int soM3 = cuoi - dau;
+                decimal thanhTien = soM3 * DON_GIA;
+                // Mã hóa đơn format: HD-NămTháng-MãKH (VD: HD-202611-1)
+                string maHD = $"HD-{cs.Nam}{cs.Thang:D2}-{cs.KhachHangId}";
+
+                var hd = new HoaDon
+                {
+                    MaHoaDon = maHD,
+                    KhachHangId = cs.KhachHangId,
+                    Thang = cs.Thang,
+                    Nam = cs.Nam,
+                    SoM3TieuThu = soM3,
+                    DonGia = DON_GIA,
+                    ThanhTien = thanhTien,
+                    DaThanhToan = false, // Mới tạo hóa đơn thì chưa thanh toán
+                };
+
+                // Thử lưu hóa đơn (nếu đã có hóa đơn tháng này rồi thì không tạo trùng)
+                try
+                {
+                    DatabaseHelper.TaoHoaDon(hd);
+                }
+                catch
+                {
+                    // Nếu đã có hóa đơn tháng này thì bỏ qua không tạo trùng
+                }
+
+                MessageBox.Show(
+                    $"Ghi nhận chỉ số nước thành công!\nĐã tự động tạo hóa đơn [{maHD}] ({thanhTien:N0} VNĐ) 🎉",
+                    "Thông báo"
+                );
                 this.Close(); // Đóng popup sau khi lưu xong
             }
         }

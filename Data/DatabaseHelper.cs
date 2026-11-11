@@ -263,6 +263,89 @@ public class DatabaseHelper
         int soDong = cmd.ExecuteNonQuery();
         return soDong > 0;
     }
+
     public static bool XoaNhanVien(int id) => XoaNhanVien(new NhanVien { Id = id });
 
+    public static bool TaoHoaDon(HoaDon hd)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql =
+            @"INSERT INTO HoaDon 
+                   (MaHoaDon, KhachHangId, ChiSoDongHoId, Thang, Nam, SoM3TieuThu, DonGia, ThanhTien)
+                   VALUES 
+                   (@MaHD, @KhId, @CsId, @Thang, @Nam, @SoM3, @DonGia, @ThanhTien)";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@MaHD", hd.MaHoaDon);
+        cmd.Parameters.AddWithValue("@KhId", hd.KhachHangId);
+        // Nếu ChiSoDongHoId null thì lưu DBNull.Value vào database
+        cmd.Parameters.AddWithValue("@CsId", (object?)hd.ChiSoDongHoId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Thang", hd.Thang);
+        cmd.Parameters.AddWithValue("@Nam", hd.Nam);
+        cmd.Parameters.AddWithValue("@SoM3", hd.SoM3TieuThu);
+        cmd.Parameters.AddWithValue("@DonGia", hd.DonGia);
+        cmd.Parameters.AddWithValue("@ThanhTien", hd.ThanhTien);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public static List<HoaDon> GetAllHoaDon()
+    {
+        var list = new List<HoaDon>();
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql =
+            @"SELECT hd.*, kh.MaKhachHang, kh.HoTen, kh.SoDienThoai
+                   FROM HoaDon hd
+                   INNER JOIN KhachHang kh ON hd.KhachHangId = kh.Id
+                   ORDER BY hd.Nam DESC, hd.Thang DESC, hd.Id DESC";
+        using var cmd = new SqlCommand(sql, conn);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(
+                new HoaDon
+                {
+                    Id = (int)reader["Id"],
+                    MaHoaDon = reader["MaHoaDon"].ToString() ?? "",
+                    KhachHangId = (int)reader["KhachHangId"],
+                    ChiSoDongHoId =
+                        reader["ChiSoDongHoId"] != DBNull.Value
+                            ? (int?)reader["ChiSoDongHoId"]
+                            : null,
+                    Thang = (int)reader["Thang"],
+                    Nam = (int)reader["Nam"],
+                    SoM3TieuThu = (int)reader["SoM3TieuThu"],
+                    DonGia = (decimal)reader["DonGia"],
+                    ThanhTien = (decimal)reader["ThanhTien"],
+                    NgayLap = (DateTime)reader["NgayLap"],
+                    DaThanhToan = (bool)reader["DaThanhToan"],
+                    NgayThanhToan =
+                        reader["NgayThanhToan"] != DBNull.Value
+                            ? (DateTime?)reader["NgayThanhToan"]
+                            : null,
+
+                    // Dữ liệu lấy từ bảng KhachHang qua INNER JOIN
+                    MaKhachHang = reader["MaKhachHang"].ToString() ?? "",
+                    TenKhachHang = reader["HoTen"].ToString() ?? "",
+                    SoDienThoai = reader["SoDienThoai"].ToString() ?? "",
+                }
+            );
+        }
+        return list;
+    }
+
+    public static bool ThanhToanHoaDon(int hoaDonId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+        string sql =
+            @"UPDATE HoaDon 
+                   SET DaThanhToan = 1, NgayThanhToan = GETDATE() 
+                   WHERE Id = @Id";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Id", hoaDonId);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public static bool ThanhToanHoaDon(HoaDon hd) => ThanhToanHoaDon(hd.Id);
 }
