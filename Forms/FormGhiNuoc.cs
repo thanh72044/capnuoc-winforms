@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using CapNuocApp.Data;
 using CapNuocApp.Models;
+using Microsoft.Data.SqlClient;
 
 namespace CapNuocApp;
 
@@ -286,21 +287,47 @@ public class FormGhiNuoc : Form
                     DaThanhToan = false, // Mới tạo hóa đơn thì chưa thanh toán
                 };
 
-                // Thử lưu hóa đơn (nếu đã có hóa đơn tháng này rồi thì không tạo trùng)
+                bool taoHoaDonThanhCong = false;
+                bool daCoHoaDonTruocDo = false;
+
                 try
                 {
-                    DatabaseHelper.TaoHoaDon(hd);
+                    taoHoaDonThanhCong = DatabaseHelper.TaoHoaDon(hd);
                 }
-                catch
+                catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
                 {
-                    // Nếu đã có hóa đơn tháng này thì bỏ qua không tạo trùng
+                    // Bắt đúng mã lỗi 2627 / 2601 của SQL Server: Trùng mã hóa đơn (UNIQUE)
+                    daCoHoaDonTruocDo = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Đã lưu chỉ số nhưng không thể tạo hóa đơn: {ex.Message}",
+                        "Lỗi tạo hóa đơn",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
                 }
 
-                MessageBox.Show(
-                    $"Ghi nhận chỉ số nước thành công!\nĐã tự động tạo hóa đơn [{maHD}] ({thanhTien:N0} VNĐ) 🎉",
-                    "Thông báo"
-                );
-                this.Close(); // Đóng popup sau khi lưu xong
+                // Thông báo rõ ràng cho người dùng biết kết quả
+                if (taoHoaDonThanhCong)
+                {
+                    MessageBox.Show(
+                        $"Ghi nhận chỉ số nước thành công!\nĐã tự động tạo hóa đơn [{maHD}] ({thanhTien:N0} VNĐ) 🎉",
+                        "Thành công",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
+                else if (daCoHoaDonTruocDo)
+                {
+                    MessageBox.Show(
+                        $"Ghi nhận chỉ số nước thành công!\n⚠️ Lưu ý: Hóa đơn kỳ tháng {cs.Thang}/{cs.Nam} của khách hàng này đã tồn tại trước đó.",
+                        "Thông báo",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
             }
         }
         catch (Exception ex)
